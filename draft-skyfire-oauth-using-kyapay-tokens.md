@@ -139,9 +139,9 @@ the token itself is the interoperability contract.
 
 # Introduction
 
-Legitimate automated traffic acting on behalf of users is a long-standing feature of the web. Financial aggregation tools, automated booking agents, and data synchronizers routinely interact with web services at the direction of their subscribers. To prevent legitimate automation from being blocked by defenses designed to detect malicious bots, security intermediaries have traditionally relied on static network metadata -- including published IP ranges, Autonomous System Numbers (ASNs), and User-Agent strings -- to identify bots and apply configured policies.
+Legitimate automated traffic acting on behalf of users is a long-standing feature of the web. Financial aggregation tools, automated booking agents, and data synchronizers routinely interact with web services at the direction of their subscribers. To prevent legitimate automation from being blocked by defenses designed to detect malicious bots, security intermediaries have traditionally relied on a combination of static network metadata -- including published IP ranges, Autonomous System Numbers (ASNs) --, and HTTP header name/value pairs -- a specific header name or matching keyword in the User-Agent strings -- to identify bots that serve a legitimate and valuable purpose and apply configured policies.
 
-This network-level model identifies bots primarily by associating their traffic with a known operator or network. However, its verification mechanisms are brittle: User-Agent headers are easily forged, IP ranges change across cloud providers and shared egress infrastructure, and network metadata cannot establish which individual subscriber authorized a particular request. The result is that network-level bot identification can establish where automated traffic comes from, but not which principal it is acting for.
+This model identifies bots primarily by associating their traffic with a known operator, network, and/or an HTTP header signature.  However, its verification mechanisms are brittle: HTTP headers are easily forged, IP ranges change across cloud providers and shared egress infrastructure, and network metadata cannot establish which individual subscriber authorized a particular request. Worst yet, not all legitimate bots identify themselves through these methods, resulting in traffic being blocked by security intermediaries running a bot detection layer. Traditional bot identification can only approximately establish where automated traffic comes from, but not which principal it is acting for.
 
 The rise of capable AI agents makes this limitation more significant. An account aggregation service reimplemented as an LLM-orchestrated agent may perform the same task for the same subscriber, but through dynamic execution flows. The relevant distinction is therefore not simply between human and automated traffic, but between:
 
@@ -446,6 +446,8 @@ A recipient MAY combine the token signal with its existing signals rather than r
 
 A bot manager sits inline in the request path to make per-request admission decisions with minimal added latency. Traditionally, it relies on a detection pipeline -- client-side behavioral telemetry, browser fingerprinting, request timing, and network-signal analysis -- to infer whether a request is automated and who operates it.
 
+### Token is present and valid
+
 KYAPay tokens transform this detection model into a self-identification model. By presenting a valid KYA token, an agent explicitly identifies itself as automated up front. The bot manager verifies the token -- checking the cryptographic signature against the issuer's published keys, issuer trust, validity window, and audience -- and classifies the request as a verified agent.
 
 For token-bearing traffic, the identification question is settled: the bot manager does not need to execute its behavioral or fingerprinting detection heuristics to prove the request is automated. Untokened or unverifiable requests fall back to the standard detection pipeline.
@@ -462,6 +464,28 @@ A validated token provides verified initiator identity (and, when targeting an a
 
 * **Replay Resistance.**
 A bearer token captured within its validity window can be replayed; a bot manager bounds this with short lifetimes, audience binding, and TLS ({{SecCon}}). Where a token carries a proof-of-possession key ({{TrustStack}}), the bot manager (or the edge/CDN provider acting for the Target) SHOULD additionally verify the per-request signature {{RFC9421}} against that key, which removes in-window replay exposure.
+
+### Token present but invalid
+In some cases, a KYA token may be present in the request but the validation process may reveal some anomalies:
+
+* **Token expired:** Tokens have a short validity time, and in some cases, bot managers may be able to detect it but the validation process may reveal that it has expired. The bot manager should return a HTTP 401 - Unauthorize status code with a custom message including the reason for the unauthorized access with a comma separated list of Token issuer to get a token from:
+
+	{“error”: “kya token expired, retrieve a new token from the KYA Token issuer: https://prefered-token-issuer-url_1, https://prefered-token-issuer-url_2 ”}
+
+* **Token invalid:** some anomalies may be detected when validating the token as described in section 6.1 and 6.2. The bot manager should return a HTTP 401 - Unauthorized status code with a custom message including the reason for the unauthorized access and recommended action.
+  
+	{“error”: “kya token invalid, retrieve a fresh token from the KYA token issuer”}
+
+### Token not present
+Companies and individuals developing AI agents may not be aware of the need to identify themselves with a KYA token. Bot managers with advanced detection methods may classify the agentic traffic as malicious and block it. To prevent a degraded agentic experience for the user principal, potentially resulting in loss of opportunity for the targeted website, Bot Managers should instead challenge the bot with a custom response to encourage the adoption of the KYA standard. 
+
+* When a bot manager detects advanced automation with no KYA token, or other traditional form of identification, the detection engine should return a 401 - Unauthorized status code with a custom message including the reason for the unauthorized access with a comma separated list of preferred Token issuer:
+  
+	{“error”: “kya token required, register with a KYA Token issuer: https://prefered-token-issuer-url_1, https://prefered-token-issuer-url_2 ”}
+
+* After the agent acquires a valid KYA token and reissues the request, the transaction can complete successfully.
+
+This light challenge is designed to help with KYA standard adoption, improve agentic traffic acceptance with merchants, and increase agent autonomy in successfully completing tasks on behalf of their user principal.
 
 ## Fraud Managers
 
