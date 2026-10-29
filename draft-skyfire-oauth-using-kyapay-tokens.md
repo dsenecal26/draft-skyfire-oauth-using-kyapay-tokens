@@ -467,26 +467,6 @@ A bearer token captured within its validity window can be replayed; a bot manage
 
 ### Token present but invalid
 In some cases, a KYA token may be present in the request but the validation process may reveal some anomalies:
-
-* **Token expired:** Tokens have a short validity time, and in some cases, bot managers may be able to detect it but the validation process may reveal that it has expired. The bot manager should return a HTTP 401 - Unauthorized status code with a custom message including the reason for the unauthorized access with a comma separated list of Token issuer to get a token from:
-
-	{“error”: “kya token expired, retrieve a new token from the KYA Token issuer: https://prefered-token-issuer-url_1, https://prefered-token-issuer-url_2 ”}
-
-* **Token invalid:** some anomalies may be detected when validating the token as described in section 6.1 and 6.2. The bot manager should return a HTTP 401 - Unauthorized status code with a custom message including the reason for the unauthorized access and recommended action.
-  
-	{“error”: “kya token invalid, retrieve a fresh token from the KYA token issuer”}
-
-### Token not present
-Companies and individuals developing AI agents may not be aware of the need to identify themselves with a KYA token. Bot managers with advanced detection methods may classify the agentic traffic as malicious and block it. To prevent a degraded agentic experience for the user principal, potentially resulting in loss of opportunity for the targeted website, Bot Managers should instead challenge the bot with a custom response to encourage the adoption of the KYA standard. 
-
-* When a bot manager detects advanced automation with no KYA token, or other traditional form of identification, the detection engine should return a 401 - Unauthorized status code with a custom message including the reason for the unauthorized access with a comma separated list of preferred Token issuers:
-  
-	{“error”: “kya token required, register with a KYA Token issuer: https://prefered-token-issuer-url_1, https://prefered-token-issuer-url_2 ”}
-
-* After the agent acquires a valid KYA token and reissues the request, the transaction can complete successfully.
-
-This light challenge is designed to help with KYA standard adoption, improve agentic traffic acceptance with merchants, and increase agent autonomy in successfully completing tasks on behalf of their user principal.
-
 ## Fraud Managers
 
 A fraud manager operates at the application layer and scores the risk of an action or transaction.
