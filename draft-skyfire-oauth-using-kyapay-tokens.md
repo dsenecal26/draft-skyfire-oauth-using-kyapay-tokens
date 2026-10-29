@@ -468,7 +468,7 @@ A bearer token captured within its validity window can be replayed; a bot manage
 ### Token present but invalid
 In some cases, a KYA token may be present in the request but the validation process may reveal some anomalies:
 
-* **Token expired:** Tokens have a short validity time, and in some cases, bot managers may be able to detect it but the validation process may reveal that it has expired. The bot manager should return a HTTP 401 - Unauthorize status code with a custom message including the reason for the unauthorized access with a comma separated list of Token issuer to get a token from:
+* **Token expired:** Tokens have a short validity time, and in some cases, bot managers may be able to detect it but the validation process may reveal that it has expired. The bot manager should return a HTTP 401 - Unauthorized status code with a custom message including the reason for the unauthorized access with a comma separated list of Token issuer to get a token from:
 
 	{“error”: “kya token expired, retrieve a new token from the KYA Token issuer: https://prefered-token-issuer-url_1, https://prefered-token-issuer-url_2 ”}
 
