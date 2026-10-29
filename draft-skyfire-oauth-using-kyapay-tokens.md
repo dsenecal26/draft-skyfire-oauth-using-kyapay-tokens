@@ -479,7 +479,7 @@ In some cases, a KYA token may be present in the request but the validation proc
 ### Token not present
 Companies and individuals developing AI agents may not be aware of the need to identify themselves with a KYA token. Bot managers with advanced detection methods may classify the agentic traffic as malicious and block it. To prevent a degraded agentic experience for the user principal, potentially resulting in loss of opportunity for the targeted website, Bot Managers should instead challenge the bot with a custom response to encourage the adoption of the KYA standard. 
 
-* When a bot manager detects advanced automation with no KYA token, or other traditional form of identification, the detection engine should return a 401 - Unauthorized status code with a custom message including the reason for the unauthorized access with a comma separated list of preferred Token issuer:
+* When a bot manager detects advanced automation with no KYA token, or other traditional form of identification, the detection engine should return a 401 - Unauthorized status code with a custom message including the reason for the unauthorized access with a comma separated list of preferred Token issuers:
   
 	{“error”: “kya token required, register with a KYA Token issuer: https://prefered-token-issuer-url_1, https://prefered-token-issuer-url_2 ”}
 
