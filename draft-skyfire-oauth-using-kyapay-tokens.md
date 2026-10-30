@@ -45,6 +45,7 @@ author:
   name: Srinivasa Thumma
   organization: Akamai
   email: sthumma@akamai.com
+-
 
 # see https://github.com/cabo/kramdown-rfc/wiki/Syntax2#authors-contributors
 
@@ -466,7 +467,29 @@ A validated token provides verified initiator identity (and, when targeting an a
 A bearer token captured within its validity window can be replayed; a bot manager bounds this with short lifetimes, audience binding, and TLS ({{SecCon}}). Where a token carries a proof-of-possession key ({{TrustStack}}), the bot manager (or the edge/CDN provider acting for the Target) SHOULD additionally verify the per-request signature {{RFC9421}} against that key, which removes in-window replay exposure.
 
 ### Token present but invalid
-In some cases, a KYA token may be present in the request but the validation process may reveal some anomalies:
+In some cases, a KYA token may be present in the request but the validation process may reveal some anomalies.
+
+* **Token expired**
+Because tokens have a short validity window, a bot manager may occasionally detect a token that expires during the validation process. In this scenario, the bot manager must return an HTTP 401 Unauthorized response. This response must include a WWW-Authenticate header specifying the reason for the authorization failure, along with a comma-separated list of authorized token issuers where a valid token can be requested.
+
+	`WWW-Authenticate: KYAPay error="expired_token", error_description="Retrieve a new token a KYA Token issuer", issuer="https://issuer.example.com, https://iss.example.org"`
+
+* **Token invalid**
+Some anomalies may be detected when validating the token as described in section 6.1 and 6.2. The bot manager should return a HTTP 401 - Unauthorized status code including a WWW-Authenticate header in the response with the reason for the unauthorized access and a comma-separated list of authorized token issuers where a valid token can be requested.
+
+	`WWW-Authenticate: KYAPay error="invalid_token", error_description="A valid KYA token is required", issuer="https://issuer.example.com, https://iss.example.org"`
+
+### Token not present
+Organizations and individuals developing AI agents may be unaware of the requirement to identify their traffic using a Know Your Agent (KYA) token. Consequently, bot managers utilizing advanced detection methods may misclassify this agentic traffic as malicious and block it. To prevent a degraded user experience, which can lead to lost business opportunities for the host website—bot managers should issue a custom challenge response instead of an outright block. This proactive approach gently encourages developers to adopt and implement the KYA standard.
+
+* When a bot manager detects advanced automation that lacks a Know Your Agent (KYA) token or other standard forms of identification, the detection engine should return an HTTP 401 Unauthorized response including a WWW-Authenticate header in the response with the reason for the unauthorized access and a comma-separated list of authorized token issuers where a valid token can be requested.
+
+	`WWW-Authenticate: KYAPay error="missing_token", error_description="A valid KYA token is required", issuer="https://issuer.example.com, https://iss.example.org"`
+
+* After the agent acquires a valid KYA token and reissues the request, the transaction can complete successfully.
+
+This light challenge is designed to help with KYA standard adoption and improve agentic traffic acceptance with merchants and increase agent autonomy in successfully completing tasks on behalf of their user principal.
+
 ## Fraud Managers
 
 A fraud manager operates at the application layer and scores the risk of an action or transaction.
@@ -758,6 +781,10 @@ for his contributions to the specification.
 {: numbered="false"}
 
 [[ to be removed by the RFC Editor before publication as an RFC ]]
+
+-02
+* Updated the traditional bot detection methods in the introduction
+* Updated the Bot Managers section and introduce the concept of feedback loop to the agent through 401 status code in case of token assessment failure
 
 -01
 
