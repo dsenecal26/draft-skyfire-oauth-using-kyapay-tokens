@@ -45,7 +45,6 @@ author:
   name: Srinivasa Thumma
   organization: Akamai
   email: sthumma@akamai.com
--
 
 # see https://github.com/cabo/kramdown-rfc/wiki/Syntax2#authors-contributors
 
@@ -467,6 +466,10 @@ A validated token provides verified initiator identity (and, when targeting an a
 A bearer token captured within its validity window can be replayed; a bot manager bounds this with short lifetimes, audience binding, and TLS ({{SecCon}}). Where a token carries a proof-of-possession key ({{TrustStack}}), the bot manager (or the edge/CDN provider acting for the Target) SHOULD additionally verify the per-request signature {{RFC9421}} against that key, which removes in-window replay exposure.
 
 ### Token present but invalid
+
+The error responses in this section and the next are examples for discussion only.
+The status code and the syntax for reporting these errors have not been decided.
+
 In some cases, a KYA token may be present in the request but the validation process may reveal some anomalies.
 
 * **Token expired**
@@ -773,8 +776,10 @@ The `amr` extensions and the `ivm` and `aml` claims and values are registered by
 The authors thank the contributors to the KYAPay Token {{I-D.skyfire-oauth-kyapay-token}} specification and the partners in the KYAPay consortium (see {{KYAPAY-ORG}}) -- including bot-management, fraud, CIAM, and ATO vendors and merchants -- whose deployment and review experience informed the usage patterns and open issues described here.
 
 We would like to thank
+David Senecal
+and
 Jean Diaconu
-for his contributions to the specification.
+for their contributions to the specification.
 
 
 # Document History
@@ -783,6 +788,7 @@ for his contributions to the specification.
 [[ to be removed by the RFC Editor before publication as an RFC ]]
 
 -02
+
 * Updated the traditional bot detection methods in the introduction
 * Updated the Bot Managers section and introduce the concept of feedback loop to the agent through 401 status code in case of token assessment failure
 
